@@ -1,0 +1,2 @@
+const chapters = [{ number: 1, title: "Chapter One" }, { number: 2, title: "Chapter Two" }, { number: 3, title: "Chapter Three" }];
+export default function Chapters() { return <main className="shell"><a className="back" href="/">← Heart of Ice</a><p className="eyebrow">CONTENTS</p><h1>Chapters</h1><div className="chapters">{chapters.map(c => <a className="chapter" key={c.number} href={`/read/${c.number}`}><span>{String(c.number).padStart(2,"0")}</span><strong>{c.title}</strong><span>→</span></a>)}</div></main>; }

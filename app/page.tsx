@@ -1,0 +1,1 @@
+export default function Home() { return <main className="shell"><p className="eyebrow">HEART OF ICE</p><h1>A new way to read.</h1><p className="lead">The Heart of Ice reading experience is taking shape.</p><div className="actions"><a href="/chapters">View chapters</a><a className="secondary" href="/read/1">Start reading</a></div></main>; }
