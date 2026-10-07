@@ -17,7 +17,9 @@ function decode(s: string) {
 
 function clean(s: string) {
   const withLinks = s.replace(/<a\b[^>]*l:href=["']#AutBody_0p(\d+)["'][^>]*>[\s\S]*?<\/a>/gi, (_, n) => `[[CHAPTER:${n}]]`);
-  return decode(withLinks.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+  const text = decode(withLinks.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+  return text
+    .replace(/\b(перейдите|переходите|перейти|идите|пойдите|отправляйтесь|направляйтесь|следуйте|двигайтесь)\s+(?:на|к)\s+(\d{1,3})\b/giu, (_, verb, n) => `${verb} [[CHAPTER:${n}]]`);
 }
 
 function parse(xml: string) {
