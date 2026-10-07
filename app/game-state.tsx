@@ -2,21 +2,29 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
+export type Character = {
+  archetype: string;
+  lifePoints: number;
+  money: number;
+};
+
 export type GameState = {
   currentChapter: number;
   skills: string[];
   items: string[];
+  character: Character | null;
   updatedAt: string;
 };
 
-const STORAGE_KEY = "heart-of-ice-save-v2";
-const defaultState: GameState = { currentChapter: 1, skills: [], items: [], updatedAt: new Date(0).toISOString() };
+const STORAGE_KEY = "heart-of-ice-save-v3";
+const defaultState: GameState = { currentChapter: 1, skills: [], items: [], character: null, updatedAt: new Date(0).toISOString() };
 
 type GameContextValue = {
   state: GameState;
   ready: boolean;
   hasSave: boolean;
   setChapter: (chapter: number) => void;
+  setCharacter: (character: Character) => void;
   toggleSkill: (skill: string) => void;
   toggleItem: (item: string) => void;
   addSkill: (skill: string) => void;
@@ -40,14 +48,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = readSave();
-    if (saved) { setState(saved); setHasSave(true); }
+    if (saved?.character) { setState(saved); setHasSave(true); }
     setReady(true);
   }, []);
 
   useEffect(() => {
     if (!ready) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    setHasSave(true);
+    setHasSave(Boolean(state.character));
   }, [state, ready]);
 
   const touch = (patch: Partial<GameState>) =>
@@ -56,6 +64,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<GameContextValue>(() => ({
     state, ready, hasSave,
     setChapter: chapter => touch({ currentChapter: chapter }),
+    setCharacter: character => touch({ character }),
     toggleSkill: skill => setState(prev => ({
       ...prev,
       skills: prev.skills.includes(skill) ? prev.skills.filter(x => x !== skill) : [...prev.skills, skill],
@@ -78,7 +87,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       const fresh = { ...defaultState, updatedAt: new Date().toISOString() };
       setState(fresh);
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-      setHasSave(true);
+      setHasSave(false);
     },
   }), [state, ready, hasSave]);
 
