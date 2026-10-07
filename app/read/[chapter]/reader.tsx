@@ -44,16 +44,16 @@ function sentenceBefore(text: string, index: number) {
 
 function inferCondition(prefix: string) {
   const cleanPrefix = clean(prefix);
-  const patterns = [
-    /(?:если|когда)\s+(.+)$/i,
-    /(?:при\s+наличии|при\s+условии)\s+(.+)$/i,
-    /(?:если\s+у\s+вас)\s+(.+)$/i,
+  const matches = [
+    ...cleanPrefix.matchAll(/\bесли(?:\s+же)?\s+(.+?)(?=,\s*(?:то\s+)?(?:перейдите|переходите|перейти)\b|\s+(?:перейдите|переходите|перейти)\s*$)/giu),
+    ...cleanPrefix.matchAll(/\b(?:при\s+наличии|при\s+условии)\s+(.+?)(?=,\s*(?:то\s+)?(?:перейдите|переходите|перейти)\b|\s+(?:перейдите|переходите|перейти)\s*$)/giu),
   ];
-  for (const pattern of patterns) {
-    const match = cleanPrefix.match(pattern);
-    if (match?.[1]) return match[1];
-  }
-  return undefined;
+  const last = matches.sort((x, y) => (x.index ?? 0) - (y.index ?? 0)).at(-1);
+  if (!last?.[1]) return undefined;
+  const value = clean(last[1]);
+  const knownSkill = ["Ближний бой","Знания","Уличная жизнь","Выживание","Хитрость","Пилотирование","Стрельба","Ловкость","Кибернетика","Воровство","Эсп","Парадокс"].some(x => value.toLocaleLowerCase("ru-RU").includes(x.toLocaleLowerCase("ru-RU")));
+  const knownItem = /\b(?:у\s+вас\s+(?:есть|имеется|нет)|имеете|имеется|предмет|оружие|пистолет|фокус|ключевое слово)\b/i.test(value);
+  return knownSkill || knownItem ? value : undefined;
 }
 
 function makeChoices(text: string, skills: string[], items: string[]) {
