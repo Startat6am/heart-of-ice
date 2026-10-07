@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { db } from "../../../lib/db";
+import Reader from "./reader";
 
 export const dynamic = "force-dynamic";
 
 type Chapter = { chapter_number: number; title: string; content: string };
 
-export default async function Reader({ params }: { params: Promise<{ chapter: string }> }) {
+export default async function ReaderPage({ params }: { params: Promise<{ chapter: string }> }) {
   const { chapter } = await params;
   const number = Number(chapter);
   if (!Number.isInteger(number) || number < 1) notFound();
@@ -24,5 +25,5 @@ export default async function Reader({ params }: { params: Promise<{ chapter: st
   const previous = index > 0 ? neighbors[index - 1].chapter_number : null;
   const next = index >= 0 && index < neighbors.length - 1 ? neighbors[index + 1].chapter_number : null;
 
-  return <main className="reader"><a className="back" href="/chapters">← Contents</a><p className="eyebrow">CHAPTER {current.chapter_number}</p><h1>{current.title}</h1><article className="book-content">{current.content ? current.content.split(/\\n\\s*\\n/).map((paragraph, i) => <p key={i}>{paragraph}</p>) : <p className="placeholder">This chapter is ready for its text.</p>}</article><nav>{previous ? <a href={`/read/${previous}`}>← Previous</a> : <span />}{next ? <a href={`/read/${next}`}>Next →</a> : <span />}</nav></main>;
+  return <Reader chapter={current.chapter_number} title={current.title} content={current.content} previous={previous} next={next} />;
 }
