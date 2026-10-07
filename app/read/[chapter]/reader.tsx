@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { useGame } from "../../game-state";
 
 type Props = { chapter: number; title: string; content: string; previous: number | null; next: number | null };
@@ -37,50 +36,50 @@ function choiceFor(target: number, condition?: string, skills: string[] = [], it
   };
 }
 
-function makeChoices(text: string, skills: string[], items: string[]) {
-  const out: Array<{ text: string; choices?: Choice[] }> = [];
-  let cursor = 0;
+function sentenceBefore(text: string, index: number) {
+  const before = text.slice(0, index);
+  const match = before.match(/(?:^|[.!?])\s*([^.!?]*)$/);
+  return match?.[1] ?? before.slice(-400);
+}
 
-  // Conditional choices can be phrased as either "перейдите на N, если..." or
-  // "... то на N, если же ... то на M". Handle both forms.
-  const conditional =
-    /перейдите\s+на\s+(\d+)\s*,\s*если\s+([^.;()]+?)\s*,\s*или\s+на\s+(\d+)\s*,\s*если\s+([^.;()]+?)(?=[).;]|$)/giu;
+function inferCondition(prefix: string) {
+  const cleanPrefix = clean(prefix);
+  const patterns = [
+    /(?:если|когда)\s+(.+)$/i,
+    /(?:при\s+наличии|при\s+условии)\s+(.+)$/i,
+    /(?:если\s+у\s+вас)\s+(.+)$/i,
+  ];
+  for (const pattern of patterns) {
+    const match = cleanPrefix.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+  return undefined;
+}
+
+function makeChoices(text: string, skills: string[], items: string[]) {
+  const marker = /\[\[CHAPTER:(\d+)\]\]/g;
+  const result: Array<{ text: string; choices?: Choice[] }> = [];
+  let last = 0;
   let m: RegExpExecArray | null;
 
-  while ((m = conditional.exec(text))) {
-    out.push({ text: text.slice(cursor, m.index) });
-    out.push({ text: m[0], choices: [choiceFor(Number(m[1]), m[2], skills, items), choiceFor(Number(m[3]), m[4], skills, items)] });
-    cursor = conditional.lastIndex;
+  while ((m = marker.exec(text))) {
+    const target = Number(m[1]);
+    result.push({ text: text.slice(last, m.index) });
+    const condition = inferCondition(sentenceBefore(text, m.index));
+    result.push({ text: "", choices: [choiceFor(target, condition, skills, items)] });
+    last = marker.lastIndex;
   }
-  out.push({ text: text.slice(cursor) });
 
-  const result: typeof out = [];
-  // General destination parser. Besides "перейдите на 23", the book often says
-  // "то на 23" / "на 45". We only link a number when it follows a transition phrase,
-  // avoiding ordinary numbers in the prose.
-  const destination = /\\[\\[CHAPTER:(\\d+)\\]\\]/g;
-
-  for (const part of out) {
-    if (part.choices) { result.push(part); continue; }
-    let last = 0;
-    let d: RegExpExecArray | null;
-    while ((d = destination.exec(part.text))) {
-      result.push({ text: part.text.slice(last, d.index) });
-      result.push({ text: "", choices: [choiceFor(Number(d[1]))] });
-      last = destination.lastIndex;
-    }
-    result.push({ text: part.text.slice(last) });
-  }
+  result.push({ text: text.slice(last) });
   return result;
 }
 
 export default function Reader({ chapter, title, content, previous, next }: Props) {
   const { state, setChapter } = useGame();
-  const router = useRouter();
   const paragraphs = useMemo(() => content ? content.split(/\n\s*\n/) : [], [content]);
   const rendered = useMemo(() => paragraphs.map(p => makeChoices(p, state.skills, state.items)), [paragraphs, state.skills, state.items]);
 
-  const go = (target: number) => { setChapter(target); router.push(`/read/${target}`); };
+  const go = (target: number) => { setChapter(target); window.location.href = `/read/${target}`; };
 
   return <main className="reader">
     <div className="reader-top">
