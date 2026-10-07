@@ -20,21 +20,24 @@ const presets = [
 export default function CharacterPage() {
   const router = useRouter();
   const { newGame, setCharacter } = useGame();
-  const [selected, setSelected] = useState<string>("");
+  const [selected, setSelected] = useState("");
   const [custom, setCustom] = useState<string[]>([]);
 
   const start = () => {
     const p = presets.find(x => x[0] === selected);
     if (p) {
       newGame();
-      setCharacter({ archetype: p[0], lifePoints: p[2], money: p[3] });
-      window.setTimeout(() => router.push("/read/1"), 0);
+      setCharacter({ archetype: p[0], lifePoints: p[2], money: p[3] }, [...p[1]], [...p[4]]);
+      router.push("/read/1");
       return;
     }
     if (selected === "Свой персонаж" && custom.length === 4) {
+      const items: string[] = [];
+      if (custom.includes("Стрельба")) items.push("Барысальский пистолет (6 зарядов)");
+      if (custom.includes("Эсп") || custom.includes("Парадокс")) items.push("Псионический фокус");
       newGame();
-      setCharacter({ archetype: "Свой персонаж", lifePoints: 10, money: 30 });
-      window.setTimeout(() => router.push("/read/1"), 0);
+      setCharacter({ archetype: "Свой персонаж", lifePoints: 10, money: 30 }, [...custom], items);
+      router.push("/read/1");
     }
   };
 
