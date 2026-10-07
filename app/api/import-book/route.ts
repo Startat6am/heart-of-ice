@@ -14,9 +14,12 @@ function decode(s: string) {
     .replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 }
+
 function clean(s: string) {
-  return decode(s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+  const withLinks = s.replace(/<a\b[^>]*l:href=["']#AutBody_0p(\d+)["'][^>]*>[\s\S]*?<\/a>/gi, (_, n) => `[[CHAPTER:${n}]]`);
+  return decode(withLinks.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
 }
+
 function parse(xml: string) {
   const out: { chapter_number: number; title: string; content: string }[] = [];
   const re = /<section\b[^>]*>([\s\S]*?)<\/section>/gi;
