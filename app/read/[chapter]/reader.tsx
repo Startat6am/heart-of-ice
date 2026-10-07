@@ -58,7 +58,7 @@ function makeChoices(text: string, skills: string[], items: string[]) {
   // General destination parser. Besides "перейдите на 23", the book often says
   // "то на 23" / "на 45". We only link a number when it follows a transition phrase,
   // avoiding ordinary numbers in the prose.
-  const destination = /(?:\b(?:перейдите|переходите|перейти|отправляйтесь|направляйтесь|отправляйтесь)\s+(?:на\s+|к\s+)?|\b(?:то\s+|тогда\s+)?на\s+)(\d+)\b/giu;
+  const destination = /\\[\\[CHAPTER:(\\d+)\\]\\]/g;
 
   for (const part of out) {
     if (part.choices) { result.push(part); continue; }
@@ -66,7 +66,7 @@ function makeChoices(text: string, skills: string[], items: string[]) {
     let d: RegExpExecArray | null;
     while ((d = destination.exec(part.text))) {
       result.push({ text: part.text.slice(last, d.index) });
-      result.push({ text: d[0], choices: [choiceFor(Number(d[1]))] });
+      result.push({ text: "", choices: [choiceFor(Number(d[1]))] });
       last = destination.lastIndex;
     }
     result.push({ text: part.text.slice(last) });
