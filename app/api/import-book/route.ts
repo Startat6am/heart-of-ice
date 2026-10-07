@@ -41,7 +41,7 @@ function parse(xml: string) {
   return out.sort((a,b) => a.chapter_number - b.chapter_number);
 }
 
-export async function POST() {
+async function importBook() {
   try {
     const xml = fs.readFileSync(path.join(process.cwd(), BOOK), "utf8");
     const chapters = parse(xml);
@@ -66,3 +66,6 @@ export async function POST() {
     return NextResponse.json({ok:false,error:e instanceof Error ? e.message : "Import failed"},{status:500});
   }
 }
+
+export async function POST() { return importBook(); }
+export async function GET() { return importBook(); }
