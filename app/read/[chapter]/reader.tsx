@@ -27,7 +27,7 @@ function makeChoices(text: string, skills: string[], items: string[]) {
   // Covers the common book forms:
   // "перейдите на 45, если вы владеете X, или на 46, если не владеете X"
   // and item variants such as "если у вас есть X / если у вас нет X".
-  const conditional = /перейдите\s+на\s+(\d+)\s*,\s*если\s+(.+?)(?:\s*,\s*или\s+на\s+(\d+)\s*,\s*если\s+(.+?))?(?=[).;]|$)/giu;
+  const conditional = /(?:перейдите|переходите)\s+на\s+(\d+)\s*,\s*если\s+((?:(?:вы\s+)?(?:не\s+)?(?:владеете|обладаете|имеете)\s+|у\s+вас\s+(?:есть|имеется|нет)\s+)[^,.;()]+?)\s*,\s*или\s+на\s+(\d+)\s*,\s*если\s+((?:(?:вы\s+)?(?:не\s+)?(?:владеете|обладаете|имеете)\s+|у\s+вас\s+(?:есть|имеется|нет)\s+)[^,.;()]+?)(?=[).;]|$)/giu;
   let match: RegExpExecArray | null;
 
   while ((match = conditional.exec(text))) {
