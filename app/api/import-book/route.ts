@@ -54,7 +54,7 @@ async function importBook() {
       const rows = batch.map((c, j) => {
         const b = j * 3;
         values.push(c.chapter_number, c.title, c.content);
-        return `(${b+1},${b+2},${b+3})`;
+        return `($${b+1},$${b+2},$${b+3})`;
       }).join(",");
       await db.query(`insert into chapters (chapter_number,title,content) values ${rows}
         on conflict (chapter_number) do update set title=excluded.title, content=excluded.content, updated_at=now()`, values);
