@@ -19,6 +19,7 @@ type GameContextValue = {
   state: GameState; ready: boolean; hasSave: boolean;
   setChapter: (chapter: number) => void;
   setCharacter: (character: Character, skills?: string[], items?: string[]) => void;
+  setLifePoints: (lifePoints: number) => void;
   toggleSkill: (skill: string) => void; toggleItem: (item: string) => void;
   addSkill: (skill: string) => void; addItem: (item: string) => void;
   newGame: () => void;
@@ -45,6 +46,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     state, ready, hasSave,
     setChapter: chapter => touch({ currentChapter: chapter }),
     setCharacter: (character, skills = [], items = []) => touch({ character, skills, items }),
+    setLifePoints: lifePoints => setState(prev => prev.character ? ({ ...prev, character: { ...prev.character, lifePoints: Math.max(0, Math.floor(lifePoints)) }, updatedAt: new Date().toISOString() }) : prev),
     toggleSkill: skill => setState(prev => ({ ...prev, skills: prev.skills.includes(skill) ? prev.skills.filter(x => x !== skill) : [...prev.skills, skill], updatedAt: new Date().toISOString() })),
     toggleItem: item => setState(prev => ({ ...prev, items: prev.items.includes(item) ? prev.items.filter(x => x !== item) : [...prev.items, item], updatedAt: new Date().toISOString() })),
     addSkill: skill => setState(prev => { const value = skill.trim(); return !value || prev.skills.includes(value) ? prev : { ...prev, skills: [...prev.skills, value], updatedAt: new Date().toISOString() }; }),
