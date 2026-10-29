@@ -16,6 +16,7 @@ export default function Status() {
 
   return <main className="shell">
     <Link className="back" href={`/read/${state.currentChapter}`}>← Вернуться к чтению</Link>
+    <Link className="back" href="/chapters">☰ Оглавление</Link>
     <p className="eyebrow">YOUR ADVENTURE</p><h1>Лист персонажа</h1>
     <p className="lead">Текущее состояние героя. Изменения жизненных очков, навыков и вещей сохраняются автоматически.</p>
     {state.character && <section className="status-section life-points-picker">
