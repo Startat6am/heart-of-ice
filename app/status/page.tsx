@@ -11,13 +11,22 @@ function AddRow({ label, onAdd }: { label: string; onAdd: (value: string) => voi
 }
 
 export default function Status() {
-  const { state, ready, toggleSkill, toggleItem, addSkill, addItem } = useGame();
+  const { state, ready, toggleSkill, toggleItem, addSkill, addItem, setLifePoints } = useGame();
   if (!ready) return <main className="shell"><p className="placeholder">Загрузка сохранения…</p></main>;
 
   return <main className="shell">
     <Link className="back" href={`/read/${state.currentChapter}`}>← Вернуться к чтению</Link>
-    <p className="eyebrow">YOUR ADVENTURE</p><h1>Вещи и навыки</h1>
-    <p className="lead">Текущее состояние героя. Условия переходов проверяют эти списки автоматически.</p>
+    <p className="eyebrow">YOUR ADVENTURE</p><h1>Лист персонажа</h1>
+    <p className="lead">Текущее состояние героя. Изменения жизненных очков, навыков и вещей сохраняются автоматически.</p>
+    {state.character && <section className="status-section life-points-picker">
+      <div className="section-heading"><h2>Жизненные очки (ЖО)</h2><span>{state.character.lifePoints}</span></div>
+      <div className="life-points-controls">
+        <button type="button" className="chip" aria-label="Уменьшить жизненные очки" disabled={state.character.lifePoints <= 0} onClick={() => setLifePoints(state.character!.lifePoints - 1)}>−</button>
+        <strong aria-live="polite">{state.character.lifePoints}</strong>
+        <button type="button" className="chip" aria-label="Увеличить жизненные очки" onClick={() => setLifePoints(state.character!.lifePoints + 1)}>+</button>
+      </div>
+      <p className="muted">Нажимайте − при потере здоровья и + при восстановлении. Ниже 0 ЖО опуститься нельзя.</p>
+    </section>}
     <section className="status-section">
       <div className="section-heading"><h2>Навыки</h2><span>{state.skills.length}</span></div>
       {state.skills.length ? <div className="chips">{state.skills.map(skill => <button className="chip active" key={skill} onClick={() => toggleSkill(skill)}>{skill} ×</button>)}</div> : <p className="muted">Пока нет навыков.</p>}
