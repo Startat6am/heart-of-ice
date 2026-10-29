@@ -22,12 +22,18 @@ export default function CharacterPage() {
   const { newGame, setCharacter } = useGame();
   const [selected, setSelected] = useState("");
   const [custom, setCustom] = useState<string[]>([]);
+  const [startingLifePoints, setStartingLifePoints] = useState(10);
+
+  const choosePreset = (name: string, lifePoints: number) => {
+    setSelected(name);
+    setStartingLifePoints(lifePoints);
+  };
 
   const start = () => {
     const p = presets.find(x => x[0] === selected);
     if (p) {
       newGame();
-      setCharacter({ archetype: p[0], lifePoints: p[2], money: p[3] }, [...p[1]], [...p[4]]);
+      setCharacter({ archetype: p[0], lifePoints: startingLifePoints, money: p[3] }, [...p[1]], [...p[4]]);
       router.push("/read/1");
       return;
     }
@@ -36,7 +42,7 @@ export default function CharacterPage() {
       if (custom.includes("Стрельба")) items.push("Бризальный пистолет (6 зарядов)");
       if (custom.includes("ПСИ") || custom.includes("Управление парадоксом")) items.push("пси-фокусировщик");
       newGame();
-      setCharacter({ archetype: "Свой персонаж", lifePoints: 10, money: 30 }, [...custom], items);
+      setCharacter({ archetype: "Свой персонаж", lifePoints: startingLifePoints, money: 30 }, [...custom], items);
       router.push("/read/1");
     }
   };
@@ -47,14 +53,23 @@ export default function CharacterPage() {
     <h1>Создайте героя</h1>
     <p className="lead">Выберите готовый образ или соберите своего героя из четырёх навыков. Стартовые жизненные очки и деньги сохраняются вместе с игрой.</p>
     <div className="preset-grid">
-      {presets.map(p => <button type="button" key={p[0]} className={selected===p[0] ? "character-card selected" : "character-card"} onClick={() => setSelected(p[0])}>
+      {presets.map(p => <button type="button" key={p[0]} className={selected===p[0] ? "character-card selected" : "character-card"} onClick={() => choosePreset(p[0], p[2])}>
         <strong>{p[0]}</strong><span>{p[1].join(" · ")}</span><small>{p[2]} ЖО · {p[3]} скэдов{p[4].length ? " · "+p[4].join(", ") : ""}</small>
       </button>)}
-      <button type="button" className={selected==="Свой персонаж" ? "character-card selected" : "character-card"} onClick={() => setSelected("Свой персонаж")}>
+      <button type="button" className={selected==="Свой персонаж" ? "character-card selected" : "character-card"} onClick={() => choosePreset("Свой персонаж", 10)}>
         <strong>Свой персонаж</strong><span>Любые 4 навыка</span><small>10 ЖО · 30 скэдов</small>
       </button>
     </div>
+    {selected && <section className="status-section life-points-picker">
+      <div className="section-heading"><h2>Жизненные очки (ЖО)</h2><span>{startingLifePoints}</span></div>
+      <div className="life-points-controls">
+        <button type="button" className="chip" aria-label="Уменьшить жизненные очки" disabled={startingLifePoints <= 0} onClick={() => setStartingLifePoints(value => Math.max(0, value - 1))}>−</button>
+        <strong aria-live="polite">{startingLifePoints}</strong>
+        <button type="button" className="chip" aria-label="Увеличить жизненные очки" onClick={() => setStartingLifePoints(value => value + 1)}>+</button>
+      </div>
+      <p className="muted">Можно изменить стартовое количество перед началом приключения.</p>
+    </section>}
     {selected==="Свой персонаж" && <section className="skill-picker"><h2>Выберите четыре навыка</h2><p className="muted">{custom.length}/4</p><div className="skill-grid">{skills.map(s => <button type="button" key={s} className={custom.includes(s)?"chip active":"chip"} disabled={!custom.includes(s)&&custom.length>=4} onClick={() => setCustom(x => x.includes(s)?x.filter(y=>y!==s):[...x,s])}>{s}</button>)}</div></section>}
-    <button type="button" className="start-game" disabled={!presets.some(x=>x[0]===selected)&&custom.length!==4} onClick={start}>Начать приключение →</button>
+    <button type="button" className="start-game" disabled={!presets.some(x=>x[0]===selected)&&!(selected==="Свой персонаж"&&custom.length===4)} onClick={start}>Начать приключение →</button>
   </main>;
 }
